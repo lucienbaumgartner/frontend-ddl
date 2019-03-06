@@ -1,6 +1,4 @@
 // set the dimensions and margins of the graph
-var chartDiv = document.getElementById("chart");
-var svg = d3.select(chartDiv).append("svg");
 
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
@@ -35,6 +33,7 @@ d3.csv("data.csv", function(error, data) {
   // format the data
   data.forEach(function(d) {
       d.date = parseTime(d.date);
+      // console.log(d.date);
       d.close = +d.close;
   });
 
@@ -60,10 +59,14 @@ d3.csv("data.csv", function(error, data) {
 
   // Add the X Axis
   svg.append("g")
+      .attr("class", "axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x));
+      .call(d3.axisBottom(x)
+        .ticks(5)
+        .tickFormat(d3.timeFormat("%d/%m")));
 
   // Add the Y Axis
   svg.append("g")
+      .attr("class", "axis")
       .call(d3.axisLeft(y));
 });

@@ -1,18 +1,29 @@
+:root{
+  --axis-color: rgba(139, 118, 130, 0.8);
+  --root-fontsize: 12px;
+  --base-font: 'Open Sans', sans-serif;
+  --title-font: 'Montserrat', sans-serif;
+}
+
+body {
+  font-family: var(--base-font);
+  font-size: var(--root-fontsize);
+}
+h1 {
+  font-size: var(--root-fontsize*2);
+  font-weight: 900;
+  font-family: var(--title-font);
+}
+text {
+  font-family: var(--base-font);
+  font-size: var(--root-fontsize);
+}
+
 .line {
   fill: none;
   stroke: steelblue;
   stroke-width: 2px;
 }
-h1 {
-  font-size: 20px;
-  font-weight: 900;
-  font-family: 'Montserrat', sans-serif;
-}
-text {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
-}
-body {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 12px;
+.axis line, path, text {
+  stroke: var(--axis-color);
 }
