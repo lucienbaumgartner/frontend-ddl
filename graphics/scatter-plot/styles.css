@@ -27,6 +27,7 @@ svg {
 }
 select {
   margin: 0px 10px;
+  vertical-align: middle;
 }
 
 .outer-container {
@@ -70,6 +71,7 @@ select {
 
 .toggle-text {
   vertical-align: middle;
+  font-weight: bold;
 }
 
 input[type=checkbox]{
