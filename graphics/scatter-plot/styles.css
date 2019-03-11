@@ -18,17 +18,36 @@ text {
   font-family: var(--base-font);
   font-size: var(--root-fontsize);
 }
+span {
+  display: inline-block;
+}
+svg {
+    display: block;
+    margin: 0 auto;
+}
+select {
+  margin: 0px 10px;
+}
+
+.outer-container {
+  margin: 0 10%;
+}
+
+.inner-container {
+  width: 0 10%;
+}
 
 .line {
   fill: none;
-  stroke-width: 1px;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  animation: dash 5s linear alternate infinite;
+  stroke-width: 2px;
+  stroke-dasharray: 2000;
+  stroke-dashoffset: 2000;
+  animation: dash 5s linear;
+  animation-fill-mode: forwards;
 }
 @keyframes dash{
    from{
-       stroke-dashoffset: 1000;
+       stroke-dashoffset: 2000;
    }
    to{
        stroke-dashoffset: 0;
@@ -36,9 +55,72 @@ text {
 }
 
 .dot {
-  animation: dash 5s linear alternate infinite;
+  animation: dash 5s linear;
 }
 
 .axis line, path, text {
   stroke: var(--axis-color);
+}
+.wrapper {
+  text-align: left;
+  display: block;
+  margin: 0 auto;
+  width: 90%;
+}
+
+.toggle-text {
+  vertical-align: middle;
+}
+
+input[type=checkbox]{
+	height: 0;
+	width: 0;
+	visibility: hidden;
+  display: inline-block;
+}
+
+label {
+	cursor: pointer;
+	text-indent: -9999px;
+	width: 100px;
+	height: 20px;
+	background: grey;
+	display: block;
+	border-radius: 100px;
+	position: relative;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+label:after {
+	content: '';
+	position: absolute;
+	top: 0px;
+	left: 5px;
+	width: 20px;
+	height: 20px;
+	background: #fff;
+	border-radius: 90px;
+	transition: 0.3s;
+}
+
+input:checked + label {
+	background: #DD2461;
+}
+
+input:checked + label:after {
+	left: calc(100% - 5px);
+  -webkit-transform: translateX(-100%);
+  -moz-transform: translateX(-100%);
+  -ms-transform: translateX(-100%);
+  -o-transform: translateX(-100%);
+	transform: translateX(-100%);
+}
+
+label:active:after {
+	width: 130px;
+}
+
+#drop-down {
+  visibility: hidden;
 }

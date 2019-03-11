@@ -1,15 +1,16 @@
+document.getElementById("switch").checked = false;
+
 // parameetr variables
-var top_n = 5;
+var top_n = 3;
 var kt = 'Wallis';
 // set the dimensions and margins of the graph
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
 
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = document.getElementById('wrapper').offsetWidth - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+console.log(document.getElementById('wrapper').offsetWidth);
 // parse the date / time
 var parseTime = d3.timeParse("%d-%b-%y");
-
-var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 // set the ranges
 var x = d3.scaleTime().range([0, width]);
@@ -23,7 +24,7 @@ var valueline = d3.line()
 // append the svg obgect to the body of the page
 // appends a 'group' element to 'svg'
 // moves the 'group' element to the top left margin
-var svg = d3.select("body").append("svg")
+var svg = d3.select(".wrapper").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -69,130 +70,163 @@ function multiFilter (arr, filters)  {
     });
 }
 */
-// Get the data
-d3.csv("Twitter_Score.csv", function(error, data) {
-  if (error) throw error;
-  console.log(data);
-  //data = data.filter(function(d) { !d.Canton == ''; } );
-  console.log(data);
+// function to draw the data
+function draw() {
+  // Get the data
+  d3.csv("Twitter_Score.csv", function(error, data) {
+    if (error) throw error;
+    console.log(data);
+    //data = data.filter(function(d) { !d.Canton == ''; } );
 
-  // format the data
-  data.forEach(function(d) {
-      d.date = firstDayOfWeek(parseInt(d.Year, 10), parseInt(d.Week, 10)); // use if you only have a week-year spec
-      // d.date = parseTime(d.date); // use if you already have a date object
-      d.close = +d.close;
-  });
-
-  // Scale the range of the data
-  x.domain(d3.extent(data, function(d) { return d.date; }));
-  y.domain([0, d3.max(data, function(d) { return d.Twitter_Success_Score; })]);
-  var nested_data = d3.nest()
-    .key(function(d) { return d.Canton; })
-    .key(function(d) { return d.User_id; })
-    .rollup(function(v) { return d3.sum(v, function(d) { return d.Twitter_Success_Score; }); })
-    .entries(data);
-  nested_data.forEach(function(d) {
-    d.values.sort(function(a, b) {
-      return d3.descending(+a.value, +b.value)
+    // format the data
+    data.forEach(function(d) {
+        d.date = firstDayOfWeek(parseInt(d.Year, 10), parseInt(d.Week, 10)); // use if you only have a week-year spec
+        // d.date = parseTime(d.date); // use if you already have a date object
+        d.close = +d.close;
     });
-  });
 
-  var sliced_data = []
-  nested_data.forEach(function(d) {
-    sliced_data.push({'Canton' : d.key, 'vars' : d.values.slice(0,3).filter( function(x){ return x.value > 0; })});
-  });
-  console.log(sliced_data);
+    // Scale the range of the data
+    x.domain(d3.extent(data, function(d) { return d.date; }));
+    y.domain([0, d3.max(data, function(d) { return d.Twitter_Success_Score; })]);
+    var nested_data = d3.nest()
+      .key(function(d) { return d.Canton; })
+      .key(function(d) { return d.User_id; })
+      .rollup(function(v) { return d3.sum(v, function(d) { return d.Twitter_Success_Score; }); })
+      .entries(data);
+    nested_data.forEach(function(d) {
+      d.values.sort(function(a, b) {
+        return d3.descending(+a.value, +b.value)
+      });
+    });
+    console.log(nested_data);
+    var cantons = []
+    nested_data.forEach(function(d) { cantons.push(d.key); });
+    cantons = cantons.sort().filter( function(x){ return !x ==""});
+    console.log(cantons);
 
-  var ids = []
-  sliced_data.forEach(function(d){ d.vars.forEach(function(x){ ids.push(parseInt(x.key, 10)); }); });
-  console.log(ids);
-  /*
-  var dummy = [{User_id: '1', name: 'a'}, {User_id: '2', name: 'b'}, {User_id: '3', name: 'c'}]
-  var ids = [1,2]
-  console.log(ids);
-  console.log(dummy);
+    var dropper = document.getElementById('drop-down')
 
-  const result = dummy.filter(f => ids.includes(parseInt(f.User_id, 10)));
-  console.log(result);
+    cantons.forEach(function(d) {
+      var opt = document.createElement('option');
+      opt.value = d;
+      opt.innerHTML = d;
+      dropper.appendChild(opt);
+    })
 
-  console.log(data.User_id);
-  */
-  /*
-  let filters = {
-  User_id: ids,
-  Canton: kt
-  };
-  console.log(data);
-  console.log(filters);
-  console.log(multiFilter(data, filters));
-  console.log(data.forEach(function(d) { multiFilter(d, filters); }));
-  */
-  //console.log(data.filter(f => ids.includes(parseInt(f.User_id), 10)).forEach(function(x){x.filter(x.Canton==kt);}));
-  // Add the valueline path.
-  //data.forEach(function(x){console.log(parseInt(x.User_id, 10));});
-  var subset = data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt)
-  console.log(subset);
+    var sliced_data = []
+    nested_data.forEach(function(d) {
+      sliced_data.push({'Canton' : d.key, 'vars' : d.values.slice(0,3).filter( function(x){ return x.value > 0; })});
+    });
+    console.log(sliced_data);
 
-  var elements = [];
-  subset.forEach(function(d){ elements.push(d.User_id); });
-  elements = [...new Set(elements)];
-  console.log(elements);
+    var ids = []
+    sliced_data.forEach(function(d){ d.vars.forEach(function(x){ ids.push(parseInt(x.key, 10)); }); });
+    console.log(ids);
+    /*
+    var dummy = [{User_id: '1', name: 'a'}, {User_id: '2', name: 'b'}, {User_id: '3', name: 'c'}]
+    var ids = [1,2]
+    console.log(ids);
+    console.log(dummy);
 
-  var dataNest = d3.nest()
-        .key(function(d) {return d.User_id;})
-        .entries(subset);
+    const result = dummy.filter(f => ids.includes(parseInt(f.User_id, 10)));
+    console.log(result);
 
-  dataNest.forEach(
-    function(d){
-      // console.log(subset.filter(function(x){ return x.User_id == d;}));
-      var path = svg.append("path")
-          .data([subset.filter(function(x){ return x.User_id == d; })])
-          .attr("class", "line")
-          .style("stroke", function() { // Add dynamically
-                return d.color = color(d.key); })
-          .attr("d", valueline(d.values));
-    }
-  )
-  /*
-  var path = document.querySelector('.path');
-  var length = path.getTotalLength();
-  path
-    .style('stroke-dasharray', 1000)
-    .style('stroke-dashoffset', 1000)
-    .style('animation', 'dash 5s linear alternate forward')
+    console.log(data.User_id);
     */
-  /*
-  svg.append("path")
-      .data([data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt)])
-      .attr("class", "line")
-      .attr("d", valueline);
-  */
+    /*
+    let filters = {
+    User_id: ids,
+    Canton: kt
+    };
+    console.log(data);
+    console.log(filters);
+    console.log(multiFilter(data, filters));
+    console.log(data.forEach(function(d) { multiFilter(d, filters); }));
+    */
+    //console.log(data.filter(f => ids.includes(parseInt(f.User_id), 10)).forEach(function(x){x.filter(x.Canton==kt);}));
+    // Add the valueline path.
+    //data.forEach(function(x){console.log(parseInt(x.User_id, 10));});
+    var subset = data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt)
+    console.log(subset);
 
-  // add dots to plot
-  svg.selectAll(".dot")
-      .data(data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt))
-    .enter().append("circle")
-      .attr('class', 'dot')
-      .attr("r", 0)
-      .attr("cx", function(d) { return x(d.date); })
-      .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
-      //.style('fill', 'steelblue')
-      .style("fill", function(d) { return color(d.User_id); })
-    .transition()
-      .duration(5000)
-      .attr("r", 3.5);
+    var elements = [];
+    subset.forEach(function(d){ elements.push(d.User_id); });
+    elements = [...new Set(elements)];
+    console.log(elements);
 
-  // add the x axis
-  svg.append("g")
-      .attr("class", "axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x)
-        .ticks(5)
-        .tickFormat(d3.timeFormat("%d/%m")));
+    var dataNest = d3.nest()
+          .key(function(d) {return d.User_id;})
+          .entries(subset);
 
-  // add the y axis
-  svg.append("g")
-      .attr("class", "axis")
-      .call(d3.axisLeft(y));
+    var color = d3.scaleOrdinal().domain(elements).range(['#020D1F',  '#5438dc', '#DD2461'])
 
-});
+    dataNest.forEach(
+      function(d){
+        // console.log(subset.filter(function(x){ return x.User_id == d;}));
+        var path = svg.append("path")
+            .data([subset.filter(function(x){ return x.User_id == d; })])
+            .attr("class", "line")
+            .style("stroke", function() { // Add dynamically
+                  return d.color = color(d.key); })
+            .attr("d", valueline(d.values));
+      }
+    )
+    /*
+    var path = document.querySelector('.path');
+    var length = path.getTotalLength();
+    path
+      .style('stroke-dasharray', 1000)
+      .style('stroke-dashoffset', 1000)
+      .style('animation', 'dash 5s linear alternate forward')
+      */
+    /*
+    svg.append("path")
+        .data([data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt)])
+        .attr("class", "line")
+        .attr("d", valueline);
+    */
+
+    // add dots to plot
+    svg.selectAll(".dot")
+        .data(data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt))
+      .enter().append("circle")
+        .attr('class', 'dot')
+        .attr("r", 0)
+        .attr("cx", function(d) { return x(d.date); })
+        .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
+        .style("fill", function(d) { return color(d.User_id); })
+      .transition()
+        .duration(document.getElementById('wrapper').offsetWidth * 2)
+        .attr("r", 2.5);
+
+    // add the x axis
+    svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+          .ticks(5)
+          .tickFormat(d3.timeFormat("%d/%m")));
+
+    // add the y axis
+    svg.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(y));
+  });
+};
+
+// call the funtion initially
+draw();
+
+function changeEventHandler(event) {
+  kt = event.target.value;
+  console.log(kt);
+  d3.selectAll("g > *").remove()
+  draw();
+}
+
+function changeToggle(event) {
+  kt = event.target.value;
+  console.log(kt);
+  d3.selectAll("g > *").remove()
+  draw();
+}
