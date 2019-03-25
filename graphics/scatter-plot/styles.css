@@ -15,7 +15,7 @@ h1 {
   font-family: var(--title-font);
 }
 text {
-  font-family: var(--base-font);
+  font-family: var(--title-font);
   font-size: var(--root-fontsize);
 }
 span {
@@ -28,6 +28,19 @@ svg {
 select {
   margin: 0px 10px;
   vertical-align: middle;
+}
+
+p {
+  text-align: justify;
+}
+
+div.tooltip {
+  background-color: lightgrey;
+  padding: 5px;
+  border-radius: 10px;
+  font-family: var(--title-font);
+  font-weight: 500;
+  color: lightgrey;
 }
 
 .outer-container {
@@ -59,7 +72,7 @@ select {
   animation: dash 5s linear;
 }
 
-.axis line, path, text {
+.axis line, path {
   stroke: var(--axis-color);
 }
 .wrapper {
@@ -72,6 +85,13 @@ select {
 .toggle-text {
   vertical-align: middle;
   font-weight: bold;
+  font-family: var(--title-font);
+}
+
+.y-axis, .x-axis {
+  background: black !important;
+  color: lightgrey !important;
+  font-weight: 800;
 }
 
 input[type=checkbox]{

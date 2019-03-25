@@ -6,7 +6,7 @@ var top_n = 3,
     kt = 'overall',
     colors_string = ['#DD2461', '#020D1F', '#5438dc'],
     // dimensions and margins of the graph
-    margin = {top: 20, right: 20, bottom: 30, left: 50},
+    margin = {top: 20, right: 20, bottom: 50, left: 50},
     width = document.getElementById('wrapper').offsetWidth - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom,
     // get the date / time parser with the right format
@@ -26,7 +26,13 @@ var top_n = 3,
         .attr("height", height + margin.top + margin.bottom)
       .append("g")
         .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
+              "translate(" + margin.left + "," + margin.top + ")"),
+    // add tooltips
+    div = d3.select(".wrapper").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+    //.style("z-index", "10")
+    //.style("position", "absolute");
 
 // function to convert year/week format to date var
 function firstDayOfWeek (year, week) {
@@ -115,20 +121,24 @@ function draw() {
           .attr("cx", function(d) { return x(d.date); })
           .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
           .style("fill", function(d) { return color(d.User_id); })
+        .on("mouseover", function(d) {
+           div.transition()
+             .duration(200)
+             .style("opacity", .9);
+           div.html('<b>' + d.Last_Name + " " +d.First_Name + '</b>' + "<br/>" + "Kt. " + d.Canton + "<br/>" + 'Twitter Score: ' + '<b>' + d.Twitter_Success_Score.toString().substring(0, 4) + '</b>')
+             .style('position', 'absolute')
+             .style("background-color", color(d.User_id))
+             .style("left", (d3.event.pageX + 5) + "px")
+             .style("top", (d3.event.pageY - 43) + "px");
+           })
+       .on("mouseout", function(d) {
+           div.transition()
+             .duration(500)
+             .style("opacity", 0);
+           })
         .transition()
           .duration(document.getElementById('wrapper').offsetWidth * 2)
           .attr("r", 2.5);
-      // add the x axis
-      svg.append("g")
-          .attr("class", "axis")
-          .attr("transform", "translate(0," + height + ")")
-          .call(d3.axisBottom(x)
-            .ticks(5)
-            .tickFormat(d3.timeFormat("%d/%m")));
-      // add the y axis
-      svg.append("g")
-          .attr("class", "axis")
-          .call(d3.axisLeft(y));
 
     }else{
       // aggregate on canton and user level
@@ -147,18 +157,21 @@ function draw() {
       nested_data.forEach(function(d) { cantons.push(d.key); });
       cantons = cantons.sort().filter( function(x){ return !x ==""});
       // create dropdown menu to select canton based on canton list
-      var dropper = document.getElementById('drop-down')
-      cantons.forEach(function(d) {
-        var opt = document.createElement('option');
-        opt.value = d;
-        opt.innerHTML = d;
-        dropper.appendChild(opt);
-      })
+      if (document.getElementsByTagName('option').length==0){
+        var dropper = document.getElementById('drop-down')
+        cantons.forEach(function(d) {
+          var opt = document.createElement('option');
+          opt.value = d;
+          opt.innerHTML = d;
+          dropper.appendChild(opt);
+        })
+      }
       // filter the :n_top: candidates
       var sliced_data = []
       nested_data.forEach(function(d) {
         sliced_data.push({'Canton' : d.key, 'vars' : d.values.slice(0,top_n).filter( function(x){ return x.value > 0; })});
       });
+      console.log(sliced_data);
       // get their IDs
       var ids = []
       sliced_data.forEach(function(d){ d.vars.forEach(function(x){ ids.push(parseInt(x.key, 10)); }); });
@@ -171,7 +184,7 @@ function draw() {
       console.log(elements);
       // group data on candidate level
       var dataNest = d3.nest()
-            .key(function(d) {return d.User_id;})
+            .key(function(d) { return d.User_id; })
             .entries(subset);
       console.log(elements);
       // create color scale based on user IDs
@@ -191,6 +204,7 @@ function draw() {
         }
       )
       // add circles to plot
+      console.log(ids);
       svg.selectAll(".dot")
           .data(data.filter(f => ids.includes(parseInt(f.User_id), 10) && f.Canton == kt))
         .enter().append("circle")
@@ -199,22 +213,57 @@ function draw() {
           .attr("cx", function(d) { return x(d.date); })
           .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
           .style("fill", function(d) { return color(d.User_id); })
+        .on("mouseover", function(d) {
+           div.transition()
+             .duration(200)
+             .style("opacity", .9);
+           div.html('<b>' + d.Last_Name + " " +d.First_Name + '</b>' + "<br/>" + 'Twitter Score: ' + '<b>' + d.Twitter_Success_Score.toString().substring(0, 4) + '</b>')
+             .style('position', 'absolute')
+             .style("background-color", color(d.User_id))
+             .style("left", (d3.event.pageX + 5) + "px")
+             .style("top", (d3.event.pageY - 43) + "px");
+           })
+       .on("mouseout", function(d) {
+           div.transition()
+             .duration(500)
+             .style("opacity", 0);
+           })
         .transition()
           .duration(document.getElementById('wrapper').offsetWidth * 2)
           .attr("r", 2.5);
-      // add the x axis
-      svg.append("g")
-          .attr("class", "axis")
-          .attr("transform", "translate(0," + height + ")")
-          .call(d3.axisBottom(x)
-            .ticks(5)
-            .tickFormat(d3.timeFormat("%d/%m")));
-      // add the y axis
-      svg.append("g")
-          .attr("class", "axis")
-          .call(d3.axisLeft(y));
-
     };
+    // add the x axis
+    svg.append("g")
+        .attr("class", "axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+          .ticks(5)
+          .tickFormat(d3.timeFormat("%d/%m")));
+
+    // add the y axis
+    svg.append("g")
+        .attr("class", "axis")
+        .call(d3.axisLeft(y));
+    // add y axis labels
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .attr('class', 'y-axis')
+        .style("text-anchor", "middle")
+        //.style('border-bottom', '1px dotted black !important')
+        //.style('background', 'black !important')
+        //.style('color', 'lightgrey !important')
+        .text("Twitter Score");
+    // add axis labels for x
+    svg.append("text")
+        .attr("transform",
+              "translate(" + (width/2) + " ," +
+                             (height + margin.top + 20) + ")")
+        .attr('class', 'x-axis')
+        .style("text-anchor", "middle")
+        .text("Date");
   });
 };
 
