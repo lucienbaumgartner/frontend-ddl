@@ -4,9 +4,9 @@ document.getElementById("switch").checked = false;
 // parameter variables
 var top_n = 3,
     kt = 'overall',
-    colors_string = ['#DD2461', '#020D1F', '#5438dc'],
+    colors_string = ['#DD2461', '#061A40', '#5438DC'],
     // dimensions and margins of the graph
-    margin = {top: 20, right: 20, bottom: 50, left: 50},
+    margin = {top: 20, right: 120, bottom: 50, left: 50},
     width = document.getElementById('wrapper').offsetWidth - margin.left - margin.right,
     height = 300 - margin.top - margin.bottom,
     // get the date / time parser with the right format
@@ -98,6 +98,7 @@ function draw() {
       // collapse nested arrays
       var merged = [].concat.apply([], subset);
 
+      console.log(subset);
       // call graphics elements
       // lines
       subset.forEach(
@@ -117,10 +118,16 @@ function draw() {
           .data(merged)
         .enter().append("circle")
           .attr('class', 'dot')
+          // .attr("id", function(d) {  console.log(d.User_id.toString()); })
           .attr("r", 0)
           .attr("cx", function(d) { return x(d.date); })
           .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
           .style("fill", function(d) { return color(d.User_id); })
+          .style("cursor", 'pointer')
+        .on("click", function(d) {
+          console.log(d.User_id);
+          fillPanel(d.User_id);
+        })
         .on("mouseover", function(d) {
            div.transition()
              .duration(200)
@@ -139,6 +146,68 @@ function draw() {
         .transition()
           .duration(document.getElementById('wrapper').offsetWidth * 2)
           .attr("r", 2.5);
+
+      // labels
+      // get max date for x-value anchor for labels
+      var maxDate;
+      dt = merged.map(function(d) {
+          return d.date
+            });
+      maxDate = d3.max(d3.values(dt));
+      // console.log(maxDate);
+      // get latest y-values for each candidate for y-achors
+      console.log(subset);
+      var pg = [];
+      subset.forEach(
+        function(d) {
+          pg.push(d.slice(d.length-1));
+        }
+      );
+      pg = [].concat.apply([], pg);
+      console.log(pg);
+      pg.sort(function(a, b) {return d3.descending(+a.Twitter_Success_Score, +b.Twitter_Success_Score)});
+      console.log(pg);
+      // label positions
+      for (var i = 0; i < pg.length; i++) {
+        if(i-1>=0 && (pg[i-1] - pg[i].Twitter_Success_Score)){
+          pg[i].Twitter_Success_Score = pg[i].Twitter_Success_Score + 0.5
+        }
+      };
+      console.log(pg);
+      var diffLog = [];
+      for (var i = 0; i < pg.length; i++) {
+        if(i>0){
+          var diff = pg[(i-1)].Twitter_Success_Score - pg[i].Twitter_Success_Score
+          diffLog.push(diff);
+          console.log(diff);
+        }
+      };
+      console.log(diffLog);
+      for (var i = 0; i < diffLog.length; i++) {
+        console.log(diffLog[i] < 0.25);
+        if(diffLog[i] < 0.25){
+          pg[i+1].Twitter_Success_Score = pg[i+1].Twitter_Success_Score - diffLog[i]/1.5;
+        }
+      }
+      //append the labels
+      svg.selectAll(".labels")
+          .data(pg)
+          .enter()
+          .append("text")
+          .attr('class', 'labels')
+          .attr('id', function (d) { return d.User_id; })
+          .attr("x", x(maxDate) + 5)
+          .attr("y", function(d) { return y(d.Twitter_Success_Score) + 4; })
+          .text(function (d) { return d.Last_Name + " " + d.First_Name; })
+          .attr("font-size", "20px")
+          .style("fill", function(d) { return color(d.User_id); })
+          .style("cursor", 'pointer')
+          .style("fill", function(d) { return color(d.User_id); })
+          .style('pointer-events', 'visible')
+          .on("click", function(d) {
+            fillPanel(d.User_id);
+            console.log(d.User_id);
+          });
 
     }else{
       // aggregate on canton and user level
@@ -191,6 +260,7 @@ function draw() {
       var color = d3.scaleOrdinal().domain(elements).range(colors_string)
       // call svg elements
       //lines
+      console.log(dataNest);
       dataNest.forEach(
         function(d){
           console.log(d);
@@ -213,6 +283,11 @@ function draw() {
           .attr("cx", function(d) { return x(d.date); })
           .attr("cy", function(d) { return y(d.Twitter_Success_Score); })
           .style("fill", function(d) { return color(d.User_id); })
+          .style("cursor", 'pointer')
+        .on("click", function(d) {
+          d3.event.fillPanel(d.User_id);
+          console.log(d.User_id);
+        })
         .on("mouseover", function(d) {
            div.transition()
              .duration(200)
@@ -231,6 +306,61 @@ function draw() {
         .transition()
           .duration(document.getElementById('wrapper').offsetWidth * 2)
           .attr("r", 2.5);
+          // labels
+          // get max date for x-value anchor for labels
+      var maxDate;
+      dt = data.map(function(d) {
+          return d.date
+            });
+      maxDate = d3.max(d3.values(dt));
+      // console.log(maxDate);
+      // get latest y-values for each candidate for y-achors
+      var pg = [];
+      dataNest.forEach(
+        function(d) {
+          pg.push(d.values.slice(d.values.length-1));
+        }
+      );
+      pg = [].concat.apply([], pg);
+      console.log(pg);
+      pg.sort(function(a, b) {return d3.descending(+a.Twitter_Success_Score, +b.Twitter_Success_Score)});
+      console.log(pg);
+      // label positions
+      console.log(pg.length);
+      var diffLog = [];
+      for (var i = 0; i < pg.length; i++) {
+        if(i>0){
+          var diff = pg[(i-1)].Twitter_Success_Score - pg[i].Twitter_Success_Score
+          diffLog.push(diff);
+          console.log(diff);
+        }
+      };
+      console.log(diffLog);
+      for (var i = 0; i < diffLog.length; i++) {
+        console.log(diffLog[i] < 0.25);
+        if(diffLog[i] < 0.25){
+          pg[i+1].Twitter_Success_Score = pg[i+1].Twitter_Success_Score - diffLog[i]/1.5;
+        }
+      }
+      console.log(pg);
+      //append the labels
+      svg.selectAll(".labels")
+          .data(pg)
+          .enter()
+          .append("text")
+          .attr('class', 'labels')
+          .attr('id', function (d) { return d.User_id; })
+          .attr("x", x(maxDate) + 5)
+          .attr("y", function(d) { return y(d.Twitter_Success_Score) + 4; })
+          .text(function (d) { return d.Last_Name + " " + d.First_Name; })
+          .attr("font-size", "20px")
+          .style("cursor", 'pointer')
+          .on("click", function(d) {
+            fillPanel(d.User_id);
+            console.log(d.User_id);
+          })
+          .style("fill", function(d) { return color(d.User_id); })
+          .style('pointer-events', 'visible');
     };
     // add the x axis
     svg.append("g")
@@ -264,6 +394,41 @@ function draw() {
         .attr('class', 'x-axis')
         .style("text-anchor", "middle")
         .text("Date");
+    fillPanel(pg[0].User_id);
+  });
+};
+
+function fillPanel(candidate) {
+  d3.selectAll(".twitter-timeline").remove();
+  console.log(candidate);
+  d3.csv("metadata.csv", function(error, data) {
+    var meta = data.filter(f => f.User_id == candidate),
+    //spider = meta.smartspider,
+    twitterProfile = document.getElementById("meta-panel");
+    console.log(meta);
+    console.log(twitterProfile);
+    //twitterProfile.outerHTML = meta[0].twitter_href;
+    $(meta[0].twitter_href).appendTo(twitterProfile);
+    /*
+    var spiderFrame = document.createElement('a');
+    spiderFrame.frameBorder=0;
+    spiderFrame.width="300px";
+    spiderFrame.height="250px";
+    spiderFrame.id="spiderFrame";
+    spiderFrame.setAttribute("href", link);
+    spiderFrame.classList.add('frame');
+    document.getElementById("meta-panel").appendChild(spiderFrame);
+    */
+    /*
+    var twitterFrame = document.createElement('a');
+    //twitterFrame.frameBorder=0;
+    //twitterFrame.width="300px";
+    //twitterFrame.height="250px";
+    twitterFrame.id="twitterFrame";
+    twitterFrame.setAttribute("href", twitterProfile);
+    twitterFrame.classList.add('twitter-timeline');
+    document.getElementById("meta-panel").appendChild(twitterFrame);
+    */
   });
 };
 
@@ -271,9 +436,9 @@ function draw() {
 // add even listener for whenever the user toggles between overall and canton view
 document.getElementById("switch").addEventListener("change", function(x){
   if (document.getElementById("switch").checked){
-    kt = 'Aargau'
+    kt = 'Aargau';
   }else{
-    kt = 'overall'
+    kt = 'overall';
   }
   d3.selectAll("g > *").remove();
   draw();
@@ -288,4 +453,6 @@ function changeEventHandler(event) {
 }
 
 // call the svg initially
-draw();
+var ids = draw();
+console.log(ids);
+//fillPanel(ids[0]);

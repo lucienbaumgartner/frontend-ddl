@@ -22,13 +22,34 @@ span {
   display: inline-block;
 }
 svg {
-    display: block;
+    display: inline-block;
     margin: 0 auto;
 }
 select {
   margin: 0px 10px;
   vertical-align: middle;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  box-shadow: none;
+  appearance: none;
+  border: none;
+  outline: none;
+  height: 20px;
+  overflow-y: hidden;
+  width: 30%;
+  outline: none;
+  border-radius: 20px;
+  background-color: lightgrey;
+  color: #DD2461;
+  font-family: var(--title-font);
+  font-weight: bold;
+  padding-left: 5px;
 }
+
+select::-ms-expand {
+  display: none;
+}
+
 
 p {
   text-align: justify;
@@ -48,7 +69,8 @@ div.tooltip {
 }
 
 .inner-container {
-  width: 0 10%;
+  width: 80%;
+  margin: 0 auto;
 }
 
 .line {
@@ -76,10 +98,15 @@ div.tooltip {
   stroke: var(--axis-color);
 }
 .wrapper {
+  /*
   text-align: left;
   display: block;
   margin: 0 auto;
   width: 90%;
+  */
+  margin-right: 5%;
+  display: inline-block;
+  width: 60%;
 }
 
 .toggle-text {
@@ -145,4 +172,14 @@ label:active:after {
 
 #drop-down {
   visibility: hidden;
+}
+
+#meta-panel {
+  width: 30%;
+  /*
+  margin: 0 auto;
+  */
+  height: 350px;
+  overflow-y: scroll;
+  display: inline-block;
 }
