@@ -1,3 +1,14 @@
+/*
+var e = $('#rufous-sandbox').title
+while (e == 'undefined') {
+  var e = $('#rufous-sandbox').title
+  console.log(e==null);
+  if (!e == 'undefined') {
+    document.querySelector('#loading').remove();
+  }
+};
+*/
+
 // set switch toggle to false
 document.getElementById("switch").checked = false;
 
@@ -56,6 +67,7 @@ function firstDayOfWeek (year, week) {
 
 // function to draw the data
 function draw() {
+
   // Get the data
   d3.csv("Twitter_Score.csv", function(error, data) {
     if (error) throw error;
@@ -204,10 +216,14 @@ function draw() {
           .style("cursor", 'pointer')
           .style("fill", function(d) { return color(d.User_id); })
           .style('pointer-events', 'visible')
-          .on("click", function(d) {
+          .style('opacity', 0)
+        .on("click", function(d) {
             fillPanel(d.User_id);
             console.log(d.User_id);
-          });
+          })
+        .transition()
+            .duration(document.getElementById('wrapper').offsetWidth * 2.5)
+            .style("opacity", 1);
 
     }else{
       // aggregate on canton and user level
@@ -360,7 +376,11 @@ function draw() {
             console.log(d.User_id);
           })
           .style("fill", function(d) { return color(d.User_id); })
-          .style('pointer-events', 'visible');
+          .style('pointer-events', 'visible')
+          .style('opacity', 0)
+          .transition()
+              .duration(document.getElementById('wrapper').offsetWidth * 2.5)
+              .style("opacity", 1);
     };
     // add the x axis
     svg.append("g")
@@ -399,6 +419,25 @@ function draw() {
 };
 
 function fillPanel(candidate) {
+  document.querySelector('#meta-panel').style.overflow = 'hidden';
+  document.querySelector('#loading').style.height = '100%';
+  document.querySelector('#loading').style.transition = 'height 0s ease-in';
+  //document.querySelector('#loading').style.position = 'relative';
+  /*
+  document.querySelector('#loading').style.transitionTimingFunction = "ease-in";
+  document.querySelector('#loading').style.transition = "0.1s";
+  document.querySelector('#loading').style.transform = "translateY(-200px)";
+
+ document.querySelector('#loading').style.transitionTimingFunction = "ease-out";
+ document.querySelector('#loading').style.transition = "1.1s";
+ document.querySelector('#loading').style.transform = "translateX(70%)";
+ */
+ //document.querySelector('#loading').style.position = 'absolute';
+  setTimeout(function(){
+   //document.querySelector('#loading').style.position = 'absolute';
+   document.querySelector('#loading').style.height = '0';
+   document.querySelector('#loading').style.transition = 'height 0.5s ease-out';
+ }, 600);
   d3.selectAll(".twitter-timeline").remove();
   console.log(candidate);
   d3.csv("metadata.csv", function(error, data) {
@@ -430,6 +469,10 @@ function fillPanel(candidate) {
     document.getElementById("meta-panel").appendChild(twitterFrame);
     */
   });
+  setTimeout(function(){
+    document.querySelector('#meta-panel').style.overflowY = 'scroll';
+  }, 1000);
+
 };
 
 // canton vs. overall
@@ -453,6 +496,5 @@ function changeEventHandler(event) {
 }
 
 // call the svg initially
-var ids = draw();
-console.log(ids);
+draw();
 //fillPanel(ids[0]);
