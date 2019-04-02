@@ -440,7 +440,7 @@ function fillPanel(candidate) {
  }, 600);
   d3.selectAll(".twitter-timeline").remove();
   console.log(candidate);
-  d3.csv("metadata.csv", function(error, data) {
+  d3.csv("metadata_v2.csv", function(error, data) {
     var meta = data.filter(f => f.User_id == candidate),
     //spider = meta.smartspider,
     twitterProfile = document.getElementById("meta-panel");
